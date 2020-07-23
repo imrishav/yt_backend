@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const { sequelize } = require('./database/sequelize');
+const sequelize = require('./database/sequelize');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const videoRoutes = require('./routes/videoRoutes');
+
 const errorHandler = require('./handlers/errorHandler');
 const app = express();
 
@@ -25,6 +27,7 @@ console.log(process.env.JWT_SECRET);
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/video', videoRoutes);
 
 app.use(errorHandler);
 

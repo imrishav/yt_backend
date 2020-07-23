@@ -17,6 +17,4 @@ const sequelize = new Sequelize('youtube', 'postgres', 'admin', {
 
 (async () => await sequelize.sync({ alter: true }))();
 
-module.exports = {
-  sequelize,
-};
+module.exports = sequelize;

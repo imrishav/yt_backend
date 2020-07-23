@@ -7,7 +7,7 @@ exports.subscriptionToggler = asyncCatch(async (req, res, next) => {
   //the user.id of current user will be passed from authorization router, which has to be implemented next.
   //Until then lets use current route only...
 
-  let userid = '1a89a421-2285-434d-b667-962a072bad4d'; //temp value otherwise req.user.id
+  let userid = '1a89a421-2285-434d-b667-962a072bad4d'; //temp value otherwise req.user.id CURRENT USER
 
   if (userid === req.params.id) {
     return next({
