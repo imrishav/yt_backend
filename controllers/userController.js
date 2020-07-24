@@ -9,6 +9,16 @@ const {
 } = require('../database/associations');
 const asyncCatch = require('../handlers/asyncCatch');
 
+const ATTRIBUTES = [
+  'id',
+  'firstname',
+  'lastname',
+  'username',
+  'channelDesc',
+  'avatar',
+  'cover',
+];
+
 exports.subscriptionToggler = asyncCatch(async (req, res, next) => {
   console.log(req.params.id);
 
@@ -64,16 +74,6 @@ exports.updateUser = asyncCatch(async (req, res, next) => {
     where: { id: req.user.id }, //AUthorization Route here also..
   });
 
-  const ATTRIBUTES = [
-    'id',
-    'firstname',
-    'lastname',
-    'username',
-    'channelDesc',
-    'avatar',
-    'cover',
-  ];
-
   const user = await User.findByPk(id, {
     attributes: ATTRIBUTES, //returns updated values..
   });
@@ -121,6 +121,38 @@ exports.recommended = asyncCatch(async (req, res, next) => {
 
     if (index === channels.length - 1) {
       return res.status(200).json({ success: true, data: channels });
+    }
+  });
+});
+
+exports.recommendedVideos = asyncCatch(async (req, res, next) => {
+  const videos = await Video.findAll({
+    attributes: [
+      'id',
+      'title',
+      'description',
+      'thumbnail',
+      'userId',
+      'createdAt',
+    ],
+    include: [
+      {
+        model: User,
+        attributes: ['id', 'username', 'avatar'],
+        order: [['createdAt', 'DESC']],
+      },
+    ],
+  });
+
+  if (!videos.length)
+    return res.status(200).json({ success: true, data: videos });
+
+  videos.forEach(async (video, index) => {
+    const views = await Views.count({ where: { videoId: video.id } });
+    video.setDataValue('views', views);
+
+    if (index === videos.length - 1) {
+      return res.status(200).json({ success: true, data: videos });
     }
   });
 });
