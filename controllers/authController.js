@@ -83,7 +83,7 @@ exports.protectTo = async (req, res, next) => {
         'email',
         'avatar',
         'cover',
-        'channelDescription',
+        'channelDesc',
       ],
       where: {
         id: decoded.id,
