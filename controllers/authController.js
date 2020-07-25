@@ -1,7 +1,19 @@
-const { User } = require('../database/associations');
-const bcyptjs = require('bcryptjs');
+const { User, Subscription } = require('../database/associations');
+const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const asyncCatch = require('../handlers/asyncCatch');
+const { Op } = require('sequelize');
+
+const ATTRIBUTES = [
+  'id',
+  'firstname',
+  'lastname',
+  'username',
+  'email',
+  'avatar',
+  'cover',
+  'channelDesc',
+];
 
 const signToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET, {
@@ -30,20 +42,15 @@ exports.signUp = asyncCatch(async (req, res, next) => {
 exports.login = asyncCatch(async (req, res, next) => {
   const { email, password } = req.body;
 
+  console.log({ email, password });
+
   const user = await User.findOne({ where: { email } });
 
-  if (!user) {
+  const passwordMatch = await bcryptjs.compare(password, user.password);
+
+  if (!user || !passwordMatch) {
     return next({
       message: 'Username not found.',
-      statusCode: 400,
-    });
-  }
-
-  const passwordMatch = await bcyptjs.compare(password, user.password);
-
-  if (!passwordMatch) {
-    return next({
-      message: 'Username or Password is incorrect.',
       statusCode: 400,
     });
   }
@@ -75,16 +82,7 @@ exports.protectTo = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findOne({
-      attributes: [
-        'id',
-        'firstname',
-        'lastname',
-        'username',
-        'email',
-        'avatar',
-        'cover',
-        'channelDesc',
-      ],
+      attributes: ATTRIBUTES,
       where: {
         id: decoded.id,
       },
@@ -99,3 +97,33 @@ exports.protectTo = async (req, res, next) => {
     });
   }
 };
+
+exports.me = asyncCatch(async (req, res, next) => {
+  const userId = req.user.id;
+
+  const user = await User.findByPk(userId, {
+    attributes: ATTRIBUTES,
+  });
+
+  const subs = await Subscription.findAll({
+    where: { subscriber: userId },
+  });
+
+  const userIds = subs.map((sub) => sub.subscribeTo);
+
+  const channels = await User.findAll({
+    attributes: ['id', 'avatar', 'username'],
+    where: {
+      id: {
+        [Op.in]: userIds,
+      },
+    },
+  });
+
+  user.setDataValue('channels', channels);
+
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});

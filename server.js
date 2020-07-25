@@ -14,16 +14,14 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan('dev'));
 
-sequelize
-  .authenticate()
-  .then((err) => {
-    console.log('Connection has been established successfully.');
-  })
-  .catch((errs) => {
-    console.log('Unsuccesfult.', errs);
-  });
-
-console.log(process.env.JWT_SECRET);
+// sequelize
+//   .authenticate()
+//   .then((err) => {
+//     console.log('Connection has been established successfully.');
+//   })
+//   .catch((errs) => {
+//     console.log('Unsuccesfult.', errs);
+//   });
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
@@ -31,7 +29,7 @@ app.use('/api/v1/video', videoRoutes);
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 6000;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log('Server has Started on: ', PORT);
 });
