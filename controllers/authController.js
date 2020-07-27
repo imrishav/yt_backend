@@ -42,29 +42,26 @@ exports.signUp = asyncCatch(async (req, res, next) => {
 exports.login = asyncCatch(async (req, res, next) => {
   const { email, password } = req.body;
 
-  console.log({ email, password });
-
   const user = await User.findOne({ where: { email } });
 
-  const passwordMatch = await bcryptjs.compare(password, user.password);
-
-  if (!user || !passwordMatch) {
+  if (!user || !(await bcryptjs.compare(password, user.password))) {
     return next({
-      message: 'Username not found.',
-      statusCode: 400,
+      message: 'Username or Password is incorrect.',
+      statusCode: 401,
     });
   }
+
+  user.password = undefined;
+  user.confirmPassword = undefined;
 
   const payload = { id: user.id };
 
   const token = signToken(payload);
+  user.setDataValue('token', token);
 
   res.status(200).json({
-    sucess: true,
-    token,
-    data: {
-      user,
-    },
+    success: true,
+    user,
   });
 });
 
