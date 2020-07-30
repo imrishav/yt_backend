@@ -3,6 +3,8 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const asyncCatch = require('../handlers/asyncCatch');
 const { Op } = require('sequelize');
+const sequelize = require('../database/sequelize');
+const { Sequelize } = require('../database/sequelize');
 
 const ATTRIBUTES = [
   'id',
@@ -24,18 +26,22 @@ const signToken = (payload) => {
 exports.signUp = asyncCatch(async (req, res, next) => {
   const user = await User.create(req.body);
 
-  const salt = await bcyptjs.genSalt(10);
-  user.password = await bcyptjs.hash(user.password, salt);
+  const salt = await bcryptjs.genSalt(10);
+  user.password = await bcryptjs.hash(user.password, salt);
   await user.save();
 
   const payload = { id: user.id };
 
   const token = signToken(payload);
+  user.password = undefined;
+  user.confirmPassword = undefined;
+
+  user.setDataValue('token', token);
 
   res.status(201).json({
     sucess: true,
     user,
-    token,
+    // token,
   });
 });
 
