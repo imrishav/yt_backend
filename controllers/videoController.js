@@ -65,6 +65,7 @@ exports.newVideo = asyncCatch(async (req, res, next) => {
 });
 
 exports.getVideo = asyncCatch(async (req, res, next) => {
+  console.log(req.user.id);
   const ATTRIBUTES = ['id', 'title'];
   const userId = req.user.id;
 
@@ -104,12 +105,6 @@ exports.getVideo = asyncCatch(async (req, res, next) => {
 
   const isLiked = checkLikes(LikeVideo, req.params.id, userId, 1);
   const isDisLiked = checkLikes(LikeVideo, req.params.id, userId, -1);
-
-  const commentCount = await Comment.count({
-    where: {
-      videoId: req.params.id,
-    },
-  });
 
   const likesCount = await genericCountFunction(
     'LikeVideo',
